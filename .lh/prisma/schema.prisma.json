@@ -1,0 +1,22 @@
+{
+    "sourceFile": "prisma/schema.prisma",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1740468764134,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1740600027569,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,15 +1,15 @@\n datasource db {\n-  provider = \"mongodb\"\n+  provider = \"postgresql\"\n   url      = env(\"DATABASE_URL\")\n }\n \n generator client {\n   provider = \"prisma-client-js\"\n }\n \n model User {\n-  id                  String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n+  id                  Int       @id @default(autoincrement())\n   firstName           String\n   email              String    @unique\n   password           String\n   isVerified         Boolean   @default(false)\n"
+                }
+            ],
+            "date": 1740468764134,
+            "name": "Commit-0",
+            "content": "datasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\ngenerator client {\n  provider = \"prisma-client-js\"\n}\n\nmodel User {\n  id                  String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  firstName           String\n  email              String    @unique\n  password           String\n  isVerified         Boolean   @default(false)\n  googleId           String?\n  verificationToken  String?\n  resetPasswordToken String?\n  resetPasswordExpires DateTime?\n  refreshToken       String?\n  createdAt          DateTime  @default(now())\n  updatedAt          DateTime  @updatedAt\n\n  @@map(\"users\")\n}"
+        }
+    ]
+}

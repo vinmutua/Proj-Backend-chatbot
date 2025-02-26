@@ -1,0 +1,22 @@
+{
+    "sourceFile": "src/app.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1740495284693,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1740495303243,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n import cors from 'cors';\r\n import helmet from 'helmet';\r\n import { errorHandler } from './middleware/errorHandler';\r\n import userRoutes from './routes/userRoutes';\r\n-import dotenv from 'dotenv';\r\n+pimport dotenv from 'dotenv';\r\n \r\n dotenv.config();\r\n \r\n const app = express();\r\n@@ -13,6 +13,11 @@\n app.use(cors({\r\n   origin: process.env.CORS_ORIGIN\r\n }));\r\n app.use(express.json());\r\n+\r\n+app.use(process.env.API_PREFIX + '/users', userRoutes);\r\n+\r\n+app.use(errorHandler);\r\n+\r\n export default app;\r\n \r\n"
+                }
+            ],
+            "date": 1740495284693,
+            "name": "Commit-0",
+            "content": "import express from 'express';\r\nimport cors from 'cors';\r\nimport helmet from 'helmet';\r\nimport { errorHandler } from './middleware/errorHandler';\r\nimport userRoutes from './routes/userRoutes';\r\nimport dotenv from 'dotenv';\r\n\r\ndotenv.config();\r\n\r\nconst app = express();\r\n\r\napp.use(helmet());\r\napp.use(cors({\r\n  origin: process.env.CORS_ORIGIN\r\n}));\r\napp.use(express.json());\r\nexport default app;\r\n\r\n"
+        }
+    ]
+}

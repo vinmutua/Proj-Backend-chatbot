@@ -1,0 +1,18 @@
+{
+    "sourceFile": "src/middleware/auth.middleware.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1740611730281,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1740611730280,
+            "name": "Commit-0",
+            "content": "import { Request, Response, NextFunction } from 'express';\r\nimport jwt from 'jsonwebtoken';\r\n\r\ninterface TokenPayload {\r\n  userId: number;  // Changed from string to number for PostgreSQL\r\n}\r\n\r\nexport const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {\r\n  // ...existing code...\r\n};\r\n"
+        }
+    ]
+}

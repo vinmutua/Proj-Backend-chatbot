@@ -1,0 +1,10 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Force specific files to use LF
+*.ts text eol=lf
+*.json text eol=lf
+*.prisma text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

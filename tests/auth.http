@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:3000/api/users
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Register new user
+# @name register
+POST {{baseUrl}}/signup
+Content-Type: application/json
+
+{
+    "firstName": "musyoki",
+    "email": "kahdhsj.doe@example.com",
+    "password": "Password123!"
+}
+
+### Login User
+# @name login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+     "email": "kahdhsj.doe@example.com",
+    "password": "Password123!"
+}
+
+### Store tokens from login response
+@authToken = {{login.response.body.tokens.accessToken}}
+@refreshToken = {{login.response.body.tokens.refreshToken}}
+
+### Get User Profile (Protected Route)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{authToken}}
+
+### Refresh Token
+POST {{baseUrl}}/refresh-token
+Content-Type: application/json
+
+{
+    "refreshToken": "{{refreshToken}}"
+}
+
+### Verify Email
+GET {{baseUrl}}/verify-email/verification-token
+
+### Logout (Protected Route)
+POST {{baseUrl}}/logout
+Authorization: Bearer {{authToken}}
+
