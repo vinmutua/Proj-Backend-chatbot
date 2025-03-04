@@ -1,4 +1,5 @@
 import { User } from '@prisma/client'
+import { JwtPayload } from 'jsonwebtoken';
 
 // Base User Type
 export type IUser = User
@@ -10,30 +11,24 @@ export interface ILoginCredentials {
 }
 
 export interface ISignupCredentials {
-    firstName: string;
     email: string;
     password: string;
 }
 
 export interface ILoginResponse {
-    user: Omit<IUser, 'password'>;
+    user: Omit<User, 'password'>;
     tokens: {
         accessToken: string;
         refreshToken: string;
     };
 }
 
-// Token Related Interfaces
-export interface IDecodedToken {
+// Token Related
+export interface IDecodedToken extends JwtPayload {
     userId: number;
-    iat: number;
-    exp: number;
 }
 
-export interface ITokens {
-    accessToken: string;
-    refreshToken: string;
-}
+export type TokenExpiry = string | number;
 
 // Google Authentication Interfaces
 export interface IGoogleAuthCredentials {
@@ -48,19 +43,25 @@ export interface IGoogleUser {
 
 // Request Parameter Interfaces
 export interface IUserParams {
-    id: number;
+    id: string;
 }
 
-// Request Body Interfaces
+// Auth Request Interfaces
+export interface ISignupRequest {
+    email: string;
+    password: string;
+}
+
 export interface ILoginRequest {
     email: string;
     password: string;
+    remember?: boolean;
 }
 
-export interface ISignupRequest {
-    firstName: string;
+export interface IGoogleAuthRequest {
+    googleId: string;
     email: string;
-    password: string;
+    idToken: string;
 }
 
 // Password Reset Interfaces
@@ -72,13 +73,21 @@ export interface IPasswordReset {
 
 // Response Interfaces
 export interface IAuthResponse {
-    success: boolean;
-    message: string;
-    data?: any;
+    user: Omit<User, 'password' | 'refreshToken'>;
+    tokens: {
+        accessToken: string;
+        refreshToken: string;
+    };
 }
 
 // Error Interface
 export interface IAppError {
     statusCode: number;
     message: string;
+}
+
+// Essential Auth Request Interfaces
+export interface IAuthRequest {
+    email: string;
+    password: string;
 }

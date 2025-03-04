@@ -1,4 +1,4 @@
-import jwt, { SignOptions, Secret, JwtPayload } from 'jsonwebtoken';
+import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
 import { IDecodedToken } from '../interfaces/userInterface';
 import { AppError } from '../types/errors';
 import dotenv from 'dotenv';
@@ -6,35 +6,29 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET as Secret;
-const REFRESH_SECRET = process.env.REFRESH_SECRET as Secret;
-
-type TokenExpiry = '15m' | '7d';
+const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret';
+const REFRESH_SECRET = process.env.REFRESH_SECRET || 'default_refresh_secret';
 
 if (!JWT_SECRET || !REFRESH_SECRET) {
     throw new Error('JWT secrets must be defined in environment variables');
 }
 
-export const generateTokens = (userId: number) => {
+/**
+ * Generate access and refresh tokens for a user
+ */
+export const generateTokens = (userId: number, expiry?: string | number) => {
     try {
-        const accessTokenOptions: SignOptions = {
-            expiresIn: (process.env.ACCESS_TOKEN_EXPIRY || '15m') as TokenExpiry
-        };
-
-        const refreshTokenOptions: SignOptions = {
-            expiresIn: (process.env.REFRESH_TOKEN_EXPIRY || '7d') as TokenExpiry
-        };
-
+        // Create options and use 'as any' to bypass TypeScript's type checking
         const accessToken = jwt.sign(
-            { userId },
-            JWT_SECRET,
-            accessTokenOptions
+            { userId }, 
+            JWT_SECRET, 
+            { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' } as any
         );
 
         const refreshToken = jwt.sign(
             { userId },
-            REFRESH_SECRET,
-            refreshTokenOptions
+            REFRESH_SECRET, 
+            { expiresIn: expiry || process.env.REFRESH_TOKEN_EXPIRY || '7d' } as any
         );
 
         return { accessToken, refreshToken };
@@ -43,7 +37,9 @@ export const generateTokens = (userId: number) => {
     }
 };
 
-// Add both named exports for backward compatibility
+/**
+ * Verify JWT token and extract payload
+ */
 export const verifyJwtToken = async (token: string): Promise<IDecodedToken> => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;

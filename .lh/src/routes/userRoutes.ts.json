@@ -1,0 +1,26 @@
+{
+    "sourceFile": "src/routes/userRoutes.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1741049751462,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1741052107881,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,18 +5,12 @@\n import { signupSchema, loginSchema, googleAuthSchema } from '../schemas/auth.schema';\r\n \r\n const router = Router();\r\n \r\n-// Traditional auth routes\r\n+// Auth routes\r\n router.post('/signup', validate({ body: signupSchema }), userController.signup);\r\n router.post('/login', validate({ body: loginSchema }), userController.login);\r\n-\r\n-// Google auth route\r\n router.post('/google', validate({ body: googleAuthSchema }), userController.googleLogin);\r\n-\r\n router.post('/refresh-token', userController.refreshToken);\r\n-router.post('/forgot-password', userController.forgotPassword);\r\n-router.post('/reset-password', userController.resetPassword);\r\n-router.get('/verify-email/:token', userController.verifyEmail);\r\n router.post('/logout', authMiddleware, userController.logout);\r\n \r\n export default router;\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1741053624003,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,9 +5,8 @@\n import { signupSchema, loginSchema, googleAuthSchema } from '../schemas/auth.schema';\r\n \r\n const router = Router();\r\n \r\n-// Auth routes\r\n router.post('/signup', validate({ body: signupSchema }), userController.signup);\r\n router.post('/login', validate({ body: loginSchema }), userController.login);\r\n router.post('/google', validate({ body: googleAuthSchema }), userController.googleLogin);\r\n router.post('/refresh-token', userController.refreshToken);\r\n"
+                }
+            ],
+            "date": 1741049751462,
+            "name": "Commit-0",
+            "content": "import { Router } from 'express';\r\nimport userController from '../controllers/userController';\r\nimport { authMiddleware } from '../middleware/auth';\r\nimport { validate } from '../middleware/validate';\r\nimport { signupSchema, loginSchema, googleAuthSchema } from '../schemas/auth.schema';\r\n\r\nconst router = Router();\r\n\r\n// Traditional auth routes\r\nrouter.post('/signup', validate({ body: signupSchema }), userController.signup);\r\nrouter.post('/login', validate({ body: loginSchema }), userController.login);\r\n\r\n// Google auth route\r\nrouter.post('/google', validate({ body: googleAuthSchema }), userController.googleLogin);\r\n\r\nrouter.post('/refresh-token', userController.refreshToken);\r\nrouter.post('/forgot-password', userController.forgotPassword);\r\nrouter.post('/reset-password', userController.resetPassword);\r\nrouter.get('/verify-email/:token', userController.verifyEmail);\r\nrouter.post('/logout', authMiddleware, userController.logout);\r\n\r\nexport default router;"
+        }
+    ]
+}

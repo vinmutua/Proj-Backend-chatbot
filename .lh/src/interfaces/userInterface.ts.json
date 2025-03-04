@@ -1,0 +1,74 @@
+{
+    "sourceFile": "src/interfaces/userInterface.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 14,
+            "patches": [
+                {
+                    "date": 1741048329537,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1741048887147,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,9 +9,8 @@\n     password: string;\r\n }\r\n \r\n export interface ISignupCredentials {\r\n-    firstName: string;\r\n     email: string;\r\n     password: string;\r\n }\r\n \r\n"
+                },
+                {
+                    "date": 1741049631774,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -49,24 +49,24 @@\n export interface IUserParams {\r\n     id: number;\r\n }\r\n \r\n-// Request Body Interfaces\r\n-export interface ILoginRequest {\r\n+// Auth Request Interfaces\r\n+export interface ISignupRequest {\r\n     email: string;\r\n     password: string;\r\n-    remember?: boolean;  // Added for remember me functionality\r\n+    confirmPassword: string;\r\n+    terms: boolean;\r\n }\r\n \r\n-export interface ISignupRequest {\r\n+export interface ILoginRequest {\r\n     email: string;\r\n     password: string;\r\n-    confirmPassword: string;\r\n-    terms: boolean;\r\n+    remember?: boolean;\r\n }\r\n \r\n-// Password Reset Interfaces\r\n-export interface IPasswordReset {\r\n+export interface IGoogleAuthRequest {\r\n+    googleId: string;\r\n     email: string;\r\n     token: string;\r\n     newPassword: string;\r\n }\r\n"
+                },
+                {
+                    "date": 1741049638143,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -66,8 +66,14 @@\n \r\n export interface IGoogleAuthRequest {\r\n     googleId: string;\r\n     email: string;\r\n+    idToken: string;\r\n+}\r\n+\r\n+// Password Reset Interfaces\r\n+export interface IPasswordReset {\r\n+    email: string;\r\n     token: string;\r\n     newPassword: string;\r\n }\r\n \r\n@@ -81,11 +87,5 @@\n // Error Interface\r\n export interface IAppError {\r\n     statusCode: number;\r\n     message: string;\r\n-}\r\n-\r\n-export interface IGoogleAuthRequest {\r\n-    googleId: string;\r\n-    email: string;\r\n-    idToken: string;\r\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1741051239861,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -53,10 +53,8 @@\n // Auth Request Interfaces\r\n export interface ISignupRequest {\r\n     email: string;\r\n     password: string;\r\n-    confirmPassword: string;\r\n-    terms: boolean;\r\n }\r\n \r\n export interface ILoginRequest {\r\n     email: string;\r\n"
+                },
+                {
+                    "date": 1741051377253,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -14,9 +14,9 @@\n     password: string;\r\n }\r\n \r\n export interface ILoginResponse {\r\n-    user: Omit<IUser, 'password'>;\r\n+    user: Omit<User, 'password'>;\r\n     tokens: {\r\n         accessToken: string;\r\n         refreshToken: string;\r\n     };\r\n"
+                },
+                {
+                    "date": 1741051492362,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,8 +33,10 @@\n     accessToken: string;\r\n     refreshToken: string;\r\n }\r\n \r\n+export type TokenExpiry = string | number;\r\n+\r\n // Google Authentication Interfaces\r\n export interface IGoogleAuthCredentials {\r\n     idToken: string;\r\n }\r\n"
+                },
+                {
+                    "date": 1741051847789,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -87,5 +87,14 @@\n // Error Interface\r\n export interface IAppError {\r\n     statusCode: number;\r\n     message: string;\r\n-}\n\\ No newline at end of file\n+}\r\n+\r\n+// Essential Auth Request Interfaces\r\n+export interface IAuthRequest {\r\n+    email: string;\r\n+    password: string;\r\n+}\r\n+\r\n+// Response Interface\r\n+export interface IAuthResponse {\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1741052132295,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -96,5 +96,11 @@\n     password: string;\r\n }\r\n \r\n // Response Interface\r\n-export interface IAuthResponse {\n\\ No newline at end of file\n+export interface IAuthResponse {\r\n+    user: Omit<User, 'password' | 'refreshToken'>;\r\n+    tokens: {\r\n+        accessToken: string;\r\n+        refreshToken: string;\r\n+    };\r\n+}\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1741052528533,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n import { User } from '@prisma/client'\r\n+import { JwtPayload } from 'jsonwebtoken';\r\n \r\n // Base User Type\r\n export type IUser = User\r\n \r\n@@ -22,18 +23,17 @@\n     };\r\n }\r\n \r\n // Token Related Interfaces\r\n-export interface IDecodedToken {\r\n+export interface IDecodedToken extends JwtPayload {\r\n     userId: number;\r\n     iat: number;\r\n     exp: number;\r\n }\r\n \r\n export interface ITokens {\r\n     accessToken: string;\r\n     refreshToken: string;\r\n-}\r\n \r\n export type TokenExpiry = string | number;\r\n \r\n // Google Authentication Interfaces\r\n"
+                },
+                {
+                    "date": 1741052533713,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,8 +32,9 @@\n \r\n export interface ITokens {\r\n     accessToken: string;\r\n     refreshToken: string;\r\n+}\r\n \r\n export type TokenExpiry = string | number;\r\n \r\n // Google Authentication Interfaces\r\n"
+                },
+                {
+                    "date": 1741052775157,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -25,17 +25,10 @@\n \r\n // Token Related Interfaces\r\n export interface IDecodedToken extends JwtPayload {\r\n     userId: number;\r\n-    iat: number;\r\n-    exp: number;\r\n }\r\n \r\n-export interface ITokens {\r\n-    accessToken: string;\r\n-    refreshToken: string;\r\n-}\r\n-\r\n export type TokenExpiry = string | number;\r\n \r\n // Google Authentication Interfaces\r\n export interface IGoogleAuthCredentials {\r\n@@ -43,8 +36,15 @@\n }\r\n \r\n export interface IGoogleUser {\r\n     email: string;\r\n+// Google Authentication Interfaces\r\n+export interface IGoogleAuthCredentials {\r\n+    idToken: string;\r\n+}\r\n+\r\n+export interface IGoogleUser {\r\n+    email: string;\r\n     name: string;\r\n     sub: string;\r\n }\r\n \r\n"
+                },
+                {
+                    "date": 1741052784398,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,15 +36,8 @@\n }\r\n \r\n export interface IGoogleUser {\r\n     email: string;\r\n-// Google Authentication Interfaces\r\n-export interface IGoogleAuthCredentials {\r\n-    idToken: string;\r\n-}\r\n-\r\n-export interface IGoogleUser {\r\n-    email: string;\r\n     name: string;\r\n     sub: string;\r\n }\r\n \r\n@@ -79,11 +72,13 @@\n }\r\n \r\n // Response Interfaces\r\n export interface IAuthResponse {\r\n-    success: boolean;\r\n-    message: string;\r\n-    data?: any;\r\n+    user: Omit<User, 'password' | 'refreshToken'>;\r\n+    tokens: {\r\n+        accessToken: string;\r\n+        refreshToken: string;\r\n+    };\r\n }\r\n \r\n // Error Interface\r\n export interface IAppError {\r\n@@ -94,14 +89,5 @@\n // Essential Auth Request Interfaces\r\n export interface IAuthRequest {\r\n     email: string;\r\n     password: string;\r\n-}\r\n-\r\n-// Response Interface\r\n-export interface IAuthResponse {\r\n-    user: Omit<User, 'password' | 'refreshToken'>;\r\n-    tokens: {\r\n-        accessToken: string;\r\n-        refreshToken: string;\r\n-    };\r\n }\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1741053158620,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,9 +22,9 @@\n         refreshToken: string;\r\n     };\r\n }\r\n \r\n-// Token Related Interfaces\r\n+// Token Related\r\n export interface IDecodedToken extends JwtPayload {\r\n     userId: number;\r\n }\r\n \r\n"
+                },
+                {
+                    "date": 1741053468485,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -42,9 +42,9 @@\n }\r\n \r\n // Request Parameter Interfaces\r\n export interface IUserParams {\r\n-    id: number;\r\n+    id: string;\r\n }\r\n \r\n // Auth Request Interfaces\r\n export interface ISignupRequest {\r\n"
+                }
+            ],
+            "date": 1741048329536,
+            "name": "Commit-0",
+            "content": "import { User } from '@prisma/client'\r\n\r\n// Base User Type\r\nexport type IUser = User\r\n\r\n// Authentication Interfaces\r\nexport interface ILoginCredentials {\r\n    email: string;\r\n    password: string;\r\n}\r\n\r\nexport interface ISignupCredentials {\r\n    firstName: string;\r\n    email: string;\r\n    password: string;\r\n}\r\n\r\nexport interface ILoginResponse {\r\n    user: Omit<IUser, 'password'>;\r\n    tokens: {\r\n        accessToken: string;\r\n        refreshToken: string;\r\n    };\r\n}\r\n\r\n// Token Related Interfaces\r\nexport interface IDecodedToken {\r\n    userId: number;\r\n    iat: number;\r\n    exp: number;\r\n}\r\n\r\nexport interface ITokens {\r\n    accessToken: string;\r\n    refreshToken: string;\r\n}\r\n\r\n// Google Authentication Interfaces\r\nexport interface IGoogleAuthCredentials {\r\n    idToken: string;\r\n}\r\n\r\nexport interface IGoogleUser {\r\n    email: string;\r\n    name: string;\r\n    sub: string;\r\n}\r\n\r\n// Request Parameter Interfaces\r\nexport interface IUserParams {\r\n    id: number;\r\n}\r\n\r\n// Request Body Interfaces\r\nexport interface ILoginRequest {\r\n    email: string;\r\n    password: string;\r\n    remember?: boolean;  // Added for remember me functionality\r\n}\r\n\r\nexport interface ISignupRequest {\r\n    email: string;\r\n    password: string;\r\n    confirmPassword: string;\r\n    terms: boolean;\r\n}\r\n\r\n// Password Reset Interfaces\r\nexport interface IPasswordReset {\r\n    email: string;\r\n    token: string;\r\n    newPassword: string;\r\n}\r\n\r\n// Response Interfaces\r\nexport interface IAuthResponse {\r\n    success: boolean;\r\n    message: string;\r\n    data?: any;\r\n}\r\n\r\n// Error Interface\r\nexport interface IAppError {\r\n    statusCode: number;\r\n    message: string;\r\n}\r\n\r\nexport interface IGoogleAuthRequest {\r\n    googleId: string;\r\n    email: string;\r\n    idToken: string;\r\n}"
+        }
+    ]
+}

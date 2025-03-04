@@ -1,17 +1,20 @@
 @baseUrl = http://localhost:3000/api/users
+@testEmail = test.user@example.com
+@testPassword = StrongPass123!
 
 ### Health Check
 GET {{baseUrl}}/health
 
 ### Register new user
-# @name register
+# @name signup
 POST {{baseUrl}}/signup
 Content-Type: application/json
 
 {
-    "firstName": "musyoki",
-    "email": "kahdhsj.doe@example.com",
-    "password": "Password123!"
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}",
+    "confirmPassword": "{{testPassword}}",
+    "terms": true
 }
 
 ### Login User
@@ -20,8 +23,9 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-     "email": "kahdhsj.doe@example.com",
-    "password": "Password123!"
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}",
+    "remember": true
 }
 
 ### Store tokens from login response
@@ -46,4 +50,23 @@ GET {{baseUrl}}/verify-email/verification-token
 ### Logout (Protected Route)
 POST {{baseUrl}}/logout
 Authorization: Bearer {{authToken}}
+
+### Google Login
+# @name googleLogin
+POST {{baseUrl}}/google
+Content-Type: application/json
+
+{
+    "googleId": "118437672312759832473",
+    "email": "google.user@gmail.com",
+    "idToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiZDY5NGJiOTcyZjE1OTk3NGU4ZDFmZjI3OTZhNzUxM2E0YmI2YmYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTg0Mzc2NzIzMTI3NTk4MzI0NzMiLCJlbWFpbCI6Imdvb2dsZS51c2VyQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiVGVzdCBVc2VyIiwicGljdHVyZSI6Imh0dHBzOi8vbGg0Lmdvb2dsZXVzZXJjb250ZW50LmNvbS8tcFg2OV81Y1dVT28vQUFBQUFBQUFBQUkvQUFBQUFBQUFBQUEvQUthNENPT1NRMzZuOHlBbHdqMEgtaGtlYzNhY3Rsb09vUS9waG90by5qcGciLCJpYXQiOjE2MTE2NzY0NjMsImV4cCI6MTYxMTY4MDA2M30.TEST"
+}
+
+### Store Google login tokens
+@googleAuthToken = {{googleLogin.response.body.tokens.accessToken}}
+@googleRefreshToken = {{googleLogin.response.body.tokens.refreshToken}}
+
+### Get Google User Profile (Protected Route)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{googleAuthToken}}
 

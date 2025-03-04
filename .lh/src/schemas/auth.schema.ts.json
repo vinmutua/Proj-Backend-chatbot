@@ -1,0 +1,34 @@
+{
+    "sourceFile": "src/schemas/auth.schema.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 4,
+            "patches": [
+                {
+                    "date": 1740614624826,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1740615959652,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,9 +7,9 @@\n     email: z.string().email('Invalid email format'),\r\n     password: z.string().min(8, 'Password must be at least 8 characters')\r\n });\r\n \r\n-export const loginSchema = z.object({\r\n+export const loginSchem a = z.object({\r\n     email: z.string().email('Invalid email format'),\r\n     password: z.string().min(1, 'Password is required')\r\n });\r\n \r\n"
+                },
+                {
+                    "date": 1741048372195,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,29 +1,29 @@\n-\r\n import { z } from 'zod';\r\n \r\n-\r\n export const signupSchema = z.object({\r\n-    firstName: z.string().min(2, 'First name must be at least 2 characters'),\r\n     email: z.string().email('Invalid email format'),\r\n-    password: z.string().min(8, 'Password must be at least 8 characters')\r\n+    password: z.string().min(8, 'Password must be at least 8 characters'),\r\n+    confirmPassword: z.string(),\r\n+    terms: z.boolean().refine((val) => val === true, {\r\n+        message: 'You must accept the terms and conditions'\r\n+    })\r\n+}).refine((data) => data.password === data.confirmPassword, {\r\n+    message: \"Passwords don't match\",\r\n+    path: [\"confirmPassword\"]\r\n });\r\n \r\n-export const loginSchem a = z.object({\r\n+export const loginSchema = z.object({\r\n     email: z.string().email('Invalid email format'),\r\n-    password: z.string().min(1, 'Password is required')\r\n+    password: z.string().min(1, 'Password is required'),\r\n+    remember: z.boolean().optional()\r\n });\r\n \r\n+export const googleAuthSchema = z.object({\r\n+    googleId: z.string(),\r\n+    email: z.string().email('Invalid email format'),\r\n+    idToken: z.string()\r\n+});\r\n+\r\n export const resetPasswordSchema = z.object({\r\n     token: z.string(),\r\n-    newPassword: z.string()\r\n-        .min(8, 'Password must be at least 8 characters')\r\n-        .regex(\r\n-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/,\r\n-            'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character'\r\n-        )\r\n-});\r\n \r\n-export type SignupInput = z.infer<typeof signupSchema>;\r\n-export type LoginInput = z.infer<typeof loginSchema>;\r\n-export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;\r\n-\r\n"
+                },
+                {
+                    "date": 1741048915039,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -25,5 +25,16 @@\n });\r\n \r\n export const resetPasswordSchema = z.object({\r\n     token: z.string(),\r\n+    newPassword: z.string()\r\n+        .min(8, 'Password must be at least 8 characters')\r\n+        .regex(\r\n+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/,\r\n+            'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character'\r\n+        )\r\n+});\r\n \r\n+export type SignupInput = z.infer<typeof signupSchema>;\r\n+export type LoginInput = z.infer<typeof loginSchema>;\r\n+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;\r\n+\r\n"
+                },
+                {
+                    "date": 1741049657758,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,14 +3,9 @@\n export const signupSchema = z.object({\r\n     email: z.string().email('Invalid email format'),\r\n     password: z.string().min(8, 'Password must be at least 8 characters'),\r\n     confirmPassword: z.string(),\r\n-    terms: z.boolean().refine((val) => val === true, {\r\n-        message: 'You must accept the terms and conditions'\r\n-    })\r\n-}).refine((data) => data.password === data.confirmPassword, {\r\n-    message: \"Passwords don't match\",\r\n-    path: [\"confirmPassword\"]\r\n+    terms: z.boolean()\r\n });\r\n \r\n export const loginSchema = z.object({\r\n     email: z.string().email('Invalid email format'),\r\n"
+                }
+            ],
+            "date": 1740614624825,
+            "name": "Commit-0",
+            "content": "\r\nimport { z } from 'zod';\r\n\r\n\r\nexport const signupSchema = z.object({\r\n    firstName: z.string().min(2, 'First name must be at least 2 characters'),\r\n    email: z.string().email('Invalid email format'),\r\n    password: z.string().min(8, 'Password must be at least 8 characters')\r\n});\r\n\r\nexport const loginSchema = z.object({\r\n    email: z.string().email('Invalid email format'),\r\n    password: z.string().min(1, 'Password is required')\r\n});\r\n\r\nexport const resetPasswordSchema = z.object({\r\n    token: z.string(),\r\n    newPassword: z.string()\r\n        .min(8, 'Password must be at least 8 characters')\r\n        .regex(\r\n            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/,\r\n            'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character'\r\n        )\r\n});\r\n\r\nexport type SignupInput = z.infer<typeof signupSchema>;\r\nexport type LoginInput = z.infer<typeof loginSchema>;\r\nexport type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;\r\n\r\n"
+        }
+    ]
+}

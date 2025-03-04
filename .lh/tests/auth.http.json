@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 13,
+            "activePatchIndex": 14,
             "patches": [
                 {
                     "date": 1740431421620,
@@ -60,6 +60,10 @@
                 {
                     "date": 1740493406065,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -35,5 +35,11 @@\n ### Refresh Token\r\n POST {{baseUrl}}/refresh-token\r\n Content-Type: application/json\r\n \r\n-{\n\\ No newline at end of file\n+{\r\n+    \"refreshToken\": \"{{refreshToken}}\"\r\n+}\r\n+\r\n+### Verify Email\r\n+GET {{baseUrl}}/verify-email/{{register.response.body.user.verificationToken}}\r\n+\r\n"
+                },
+                {
+                    "date": 1740903587003,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,9 +9,9 @@\n Content-Type: application/json\r\n \r\n {\r\n     \"firstName\": \"musyoki\",\r\n-    \"email\": \".doe@example.com\",\r\n+    \"email\": \"c.doe@example.com\",\r\n     \"password\": \"Password123!\"\r\n }\r\n \r\n ### Login User\r\n"
                 }
             ],
             "date": 1740431421619,

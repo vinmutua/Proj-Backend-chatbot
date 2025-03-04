@@ -1,143 +1,57 @@
 import { Request, Response } from 'express';
 import { userService } from '../services/userService';
 import { AppError } from '../types/errors';
-import { IUserParams, ILoginRequest, ISignupRequest } from '../interfaces/userInterface';
+import { IAuthRequest, IGoogleAuthRequest, IUserParams } from '../interfaces/userInterface';
 
-class UserController {
-    public async signup(req: Request<{}, {}, ISignupRequest>, res: Response): Promise<void> {
+export class UserController {
+    public async signup(req: Request<{}, {}, IAuthRequest>, res: Response): Promise<void> {
         try {
-            const userData = req.body;
-            const result = await userService.signup(userData);
+            const result = await userService.signup(req.body);
             res.status(201).json(result);
         } catch (error) {
-            if (error instanceof AppError) {
-                res.status(error.statusCode).json({ message: error.message });
-            } else {
-                res.status(400).json({ message: 'Error during signup' });
-            }
+            this.handleError(error, res, 'Error during signup');
         }
     }
 
-    public async login(req: Request<{}, {}, ILoginRequest>, res: Response): Promise<void> {
+    public async login(req: Request, res: Response): Promise<void> {
         try {
-            const { email, password } = req.body;
-            const result = await userService.login(email, password);
+            const { email, password, remember } = req.body;
+            const result = await userService.login(email, password, remember);
             res.status(200).json(result);
         } catch (error) {
-            if (error instanceof AppError) {
-                res.status(error.statusCode).json({ message: error.message });
-            } else {
-                res.status(401).json({ message: 'Authentication failed' });
-            }
+            this.handleError(error, res, 'Authentication failed');
         }
     }
 
     public async refreshToken(req: Request, res: Response): Promise<void> {
         try {
             const { refreshToken } = req.body;
-            if (!refreshToken) {
-                throw new AppError(400, 'Refresh token is required');
-            }
-            const result = await userService.refreshToken(refreshToken);
-            res.status(200).json(result);
+            const tokens = await userService.refreshToken(refreshToken);
+            res.status(200).json(tokens);
         } catch (error) {
-            if (error instanceof AppError) {
-                res.status(error.statusCode).json({ message: error.message });
-            } else {
-                res.status(401).json({ message: 'Token refresh failed' });
-            }
-        }
-    }
-
-    public async forgotPassword(req: Request, res: Response): Promise<void> {
-        try {
-            const { email } = req.body;
-            await userService.forgotPassword(email);
-            res.status(200).json({ 
-                message: 'Password reset email sent'
-            });
-        } catch (error: any) {
-            res.status(400).json({ 
-                message: error.message || 'Password reset request failed'
-            });
-        }
-    }
-
-    public async resetPassword(req: Request, res: Response): Promise<void> {
-        try {
-            const { token, newPassword } = req.body;
-            await userService.resetPassword(token, newPassword);
-            res.status(200).json({ 
-                message: 'Password reset successful'
-            });
-        } catch (error: any) {
-            res.status(400).json({ 
-                message: error.message || 'Password reset failed'
-            });
-        }
-    }
-
-    public async verifyEmail(req: Request, res: Response): Promise<void> {
-        try {
-            const { token } = req.params;
-            await userService.verifyEmail(token);
-            res.status(200).json({ 
-                message: 'Email verified successfully'
-            });
-        } catch (error: any) {
-            res.status(400).json({ 
-                message: error.message || 'Email verification failed'
-            });
+            res.status(401).json({ message: 'Invalid refresh token' });
         }
     }
 
     public async logout(req: Request, res: Response): Promise<void> {
         try {
-            const authHeader = req.headers.authorization;
-            if (!authHeader) {
-                throw new Error('No authorization token provided');
-            }
-            
-            await userService.logout(authHeader);
-            res.status(200).json({ 
-                message: 'Logged out successfully'
-            });
-        } catch (error: any) {
-            res.status(400).json({ 
-                message: error.message || 'Logout failed'
-            });
-        }
-    }
-
-    public async googleLogin(req: Request, res: Response): Promise<void> {
-        try {
-            const { idToken } = req.body;
-            const result = await userService.googleLogin(idToken);
-            res.status(200).json(result);
-        } catch (error: any) {
-            res.status(401).json({ 
-                message: error.message || 'Google authentication failed'
-            });
-        }
-    }
-
-    public async getUserById(req: Request<IUserParams>, res: Response): Promise<void> {
-        try {
-            const id = Number(req.params.id);
-            if (isNaN(id)) {
+            const userId = Number(req.user?.id);
+            if (isNaN(userId)) {
                 throw new AppError(400, 'Invalid user ID');
             }
-            const user = await userService.findUserById(id);
-            if (!user) {
-                throw new AppError(404, 'User not found');
-            }
-            res.status(200).json(user);
+            await userService.logout(userId);
+            res.status(200).json({ message: 'Logged out successfully' });
         } catch (error) {
-            if (error instanceof AppError) {
-                res.status(error.statusCode).json({ message: error.message });
-            } else {
-                res.status(500).json({ message: 'Internal server error' });
-            }
+            this.handleError(error, res, 'Error during logout');
+        }
+    }
+
+    public async googleLogin(req: Request<{}, {}, IGoogleAuthRequest>, res: Response): Promise<void> {
+        try {
+            const result = await userService.googleLogin(req.body);
+            res.status(200).json(result);
+        } catch (error) {
+            this.handleError(error, res, 'Google authentication failed');
         }
     }
 
@@ -150,4 +64,5 @@ class UserController {
     }
 }
 
-export default new UserController();
+export const userController = new UserController();
+export default userController;
