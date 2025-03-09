@@ -25,7 +25,9 @@ export interface ILoginResponse {
 
 // Token Related
 export interface IDecodedToken extends JwtPayload {
-    userId: number;
+    userId: string;
+    iat: number;
+    exp: number;
 }
 
 export type TokenExpiry = string | number;

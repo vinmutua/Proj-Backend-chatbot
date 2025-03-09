@@ -1,15 +1,17 @@
 import { Router } from 'express';
-import userController from '../controllers/userController';
+import { userController } from '../controllers/userController';
 import { authMiddleware } from '../middleware/auth';
-import { validate } from '../middleware/validate';
-import { signupSchema, loginSchema, googleAuthSchema } from '../schemas/auth.schema';
 
 const router = Router();
 
-router.post('/signup', validate({ body: signupSchema }), userController.signup);
-router.post('/login', validate({ body: loginSchema }), userController.login);
-router.post('/google', validate({ body: googleAuthSchema }), userController.googleLogin);
-router.post('/refresh-token', userController.refreshToken);
+// Public routes
+router.post('/signup', userController.signup);
+router.post('/login', userController.login);
+router.post('/google', userController.googleLogin);
+
+// Protected routes
 router.post('/logout', authMiddleware, userController.logout);
+router.get('/profile', authMiddleware, userController.getProfile);
+router.post('/refresh-token', userController.refreshToken);
 
 export default router;

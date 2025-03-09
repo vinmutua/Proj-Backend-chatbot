@@ -1,0 +1,18 @@
+{
+    "sourceFile": "src/controllers/webhookController.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1741175927541,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1741175927541,
+            "name": "Commit-0",
+            "content": "import { Request, Response } from 'express';\r\nimport crypto from 'crypto';\r\nimport { messengerConfig } from '../config/messenger.config';\r\nimport { messengerService } from '../services/messengerService';\r\nimport { WebhookEvent } from '../types/messenger.types';\r\nimport { AppError } from '../types/errors';\r\n\r\nexport class WebhookController {\r\n    verifyWebhook(req: Request, res: Response) {\r\n        const mode = req.query['hub.mode'];\r\n        const token = req.query['hub.verify_token'];\r\n        const challenge = req.query['hub.challenge'];\r\n\r\n        if (mode === 'subscribe' && token === messengerConfig.verify_token) {\r\n            console.log('Webhook verified');\r\n            res.status(200).send(challenge);\r\n        } else {\r\n            res.sendStatus(403);\r\n        }\r\n    }\r\n\r\n    async handleWebhook(req: Request, res: Response) {\r\n        try {\r\n            this.verifySignature(req);\r\n            const body: WebhookEvent = req.body;\r\n\r\n            if (body.object === 'page') {\r\n                for (const entry of body.entry) {\r\n                    for (const event of entry.messaging) {\r\n                        await messengerService.handleMessage(event);\r\n                    }\r\n                }\r\n                res.status(200).send('EVENT_RECEIVED');\r\n            } else {\r\n                res.sendStatus(404);\r\n            }\r\n        } catch (error) {\r\n            console.error('Webhook Error:', error);\r\n            res.sendStatus(500);\r\n        }\r\n    }\r\n\r\n    private verifySignature(req: Request) {\r\n        const signature = req.headers['x-hub-signature-256'];\r\n        if (!signature) {\r\n            throw new AppError(403, 'No signature');\r\n        }\r\n\r\n        const elements = signature.toString().split('=');\r\n        const signatureHash = elements[1];\r\n        \r\n        const expectedHash = crypto\r\n            .createHmac('sha256', messengerConfig.app_secret)\r\n            .update(JSON.stringify(req.body))\r\n            .digest('hex');\r\n\r\n        if (signatureHash !== expectedHash) {\r\n            throw new AppError(403, 'Invalid signature');\r\n        }\r\n    }\r\n}\r\n\r\nexport const webhookController = new WebhookController();"
+        }
+    ]
+}

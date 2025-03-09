@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 5,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1740608948533,
@@ -28,6 +28,10 @@
                 {
                     "date": 1741048931050,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -40,10 +40,10 @@\n             user: this.sanitizeUser(user),\r\n             tokens\r\n         };\r\n     }\r\n-        const user = await prisma.user.findUnique({\r\n-            where: { email }\r\n+\r\n+    async login(email: string, password: string, remember?: boolean): Promise<ILoginResponse> {\r\n         });\r\n \r\n         if (!user || !await comparePasswords(password, user.password)) {\r\n             throw new AppError(401, 'Invalid credentials');\r\n"
+                },
+                {
+                    "date": 1741180176507,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -73,9 +73,9 @@\n             // Find user with valid refresh token\r\n             const user = await prisma.user.findFirst({\r\n                 where: {\r\n                     id: decoded.userId,\r\n-            });\r\n+                    refreshToken: refreshToken\r\n \r\n             if (!user) {\r\n                 throw new AppError(401, 'Invalid refresh token');\r\n             }\r\n"
                 }
             ],
             "date": 1740608948533,

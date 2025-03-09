@@ -1,40 +1,55 @@
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-// Load env variables first
+import userRoutes from './routes/userRoutes';
+import prisma from './lib/prisma';
+import { serverConfig, corsOptions } from './config/config';
+
+// Load environment variables
 dotenv.config();
 
-import app from './app';
-import prisma from './lib/prisma';
+const app = express();
 
-const PORT = process.env.PORT || 3000;
+// Middleware
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(express.json());
+
+// Routes
+app.use(serverConfig.api_prefix + '/users', userRoutes);
+
+// Error handling
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+    });
+});
+
+const PORT = Number(serverConfig.port);
 
 async function startServer() {
     try {
-        // Test database connection
         await prisma.$connect();
         console.log('Database Connected Successfully');
 
-        // Start server
-        const server = app.listen(PORT, () => {
+        // Bind to 0.0.0.0 so the server is accessible on your network IP.
+        const server = app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server running on port ${PORT}`);
         });
 
-        // Graceful shutdown handlers
         const shutdown = async () => {
             console.log('Shutting down server...');
             await prisma.$disconnect();
             server.close(() => {
-                console.log('Server closed');
                 process.exit(0);
             });
         };
 
-        // Handle different shutdown signals
-        process.on('SIGTERM', shutdown);
         process.on('SIGINT', shutdown);
-        process.on('uncaughtException', async (error) => {
-            console.error('Uncaught Exception:', error);
-            await shutdown();
-        });
+        process.on('SIGTERM', shutdown);
 
     } catch (error) {
         console.error('Startup Error:', error);
@@ -44,4 +59,6 @@ async function startServer() {
 }
 
 startServer();
+
+export default app;
 

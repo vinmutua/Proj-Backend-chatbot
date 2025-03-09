@@ -1,11 +1,13 @@
 import { IAuthRequest, IAuthResponse, IGoogleAuthRequest, IDecodedToken } from '../interfaces/userInterface';
 import { hashPassword, comparePasswords } from '../utils/bcrypt';
-import { generateTokens, verifyJwtToken } from '../utils/jwt';
+import { generateTokens, verifyJwtToken, verifyRefreshToken } from '../utils/jwt';
 import { verifyGoogleToken } from '../utils/oauth';
 import prisma from '../lib/prisma';
 import crypto from 'crypto';
 import { AppError } from '../types/errors';
 import { User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { authConfig } from '../config/config';
 
 export class UserService {
     async signup(userData: IAuthRequest): Promise<IAuthResponse> {
@@ -18,7 +20,8 @@ export class UserService {
         }
 
         const hashedPassword = await hashPassword(userData.password);
-        
+
+        // No need to generate a custom id – Prisma auto-generates it.
         const user = await prisma.user.create({
             data: {
                 email: userData.email,
@@ -48,9 +51,7 @@ export class UserService {
             throw new AppError(401, 'Invalid credentials');
         }
 
-        const tokens = remember ? 
-            await generateTokens(user.id, '30d') : 
-            await generateTokens(user.id);
+        const tokens = await generateTokens(user.id, remember ? '30d' : undefined);
 
         await prisma.user.update({
             where: { id: user.id },
@@ -63,17 +64,42 @@ export class UserService {
         };
     }
 
-    async refreshToken(token: string) {
-        const decoded = await verifyJwtToken(token) as IDecodedToken;
-        const user = await prisma.user.findUnique({
-            where: { id: decoded.userId }
-        });
-        
-        if (!user) {
-            throw new AppError(404, 'User not found');
-        }
+    async refreshToken(refreshToken: string) {
+        try {
+            // Verify the refresh token
+            const decoded = await verifyRefreshToken(refreshToken);
+            
+            // Find user with valid refresh token
+            const user = await prisma.user.findFirst({
+                where: {
+                    id: decoded.userId,
+                    refreshToken: refreshToken
+                }
+            });
 
-        return generateTokens(user.id);
+            if (!user) {
+                throw new AppError(401, 'Invalid refresh token');
+            }
+
+            // Generate new tokens
+            const tokens = generateTokens(user.id);
+
+            // Update refresh token in database
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { refreshToken: tokens.refreshToken }
+            });
+
+            return {
+                user: {
+                    id: user.id,
+                    email: user.email
+                },
+                tokens
+            };
+        } catch (error) {
+            throw new AppError(401, 'Invalid refresh token');
+        }
     }
 
     async googleLogin(authData: IGoogleAuthRequest): Promise<IAuthResponse> {
@@ -110,17 +136,41 @@ export class UserService {
         };
     }
 
-    async logout(userId: number): Promise<void> {
-        await prisma.user.update({
-            where: { id: userId },
-            data: { refreshToken: null }
-        });
+    async logout(userId: string): Promise<void> {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { id: userId }
+            });
+
+            if (!user) {
+                throw new AppError(404, 'User not found');
+            }
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: { 
+                    refreshToken: null
+                }
+            });
+        } catch (error) {
+            throw new AppError(500, 'Error during logout');
+        }
     }
 
-    async findUserById(id: number): Promise<User | null> {
-        return prisma.user.findUnique({
-            where: { id }
-        });
+    async findUserById(userId: string) {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { id: userId }
+            });
+
+            if (!user) {
+                throw new AppError(404, 'User not found');
+            }
+
+            return user;
+        } catch (error) {
+            throw error;
+        }
     }
 
     private sanitizeUser(user: User): Omit<User, 'password' | 'refreshToken'> {
