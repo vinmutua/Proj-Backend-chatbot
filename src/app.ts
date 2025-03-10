@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { corsOptions } from './config/config';
+import { corsOptions, serverConfig } from './config/config';
 import userRoutes from './routes/userRoutes';
+import messageRoutes from './routes/messageRoutes';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,7 +15,8 @@ app.use(cors(corsOptions));  // <- Uses the configured allowed origins
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(process.env.API_PREFIX + '/users', userRoutes);
+app.use(serverConfig.api_prefix + '/users', userRoutes);
+app.use(serverConfig.api_prefix + '/messages', messageRoutes);  // Add this line
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

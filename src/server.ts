@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
+import messageRoutes from './routes/messageRoutes';
 import prisma from './lib/prisma';
 import { serverConfig, corsOptions } from './config/config';
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Routes
 app.use(serverConfig.api_prefix + '/users', userRoutes);
+app.use(serverConfig.api_prefix + '/messages', messageRoutes);
 
 // Error handling
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
