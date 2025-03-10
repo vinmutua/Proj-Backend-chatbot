@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:3000/api/messages
+@contentType = application/json
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzZGI4YjE3Zi0wZTFhLTQ4Y2YtYWMwYi0xNTVhZDcxYzUyNTAiLCJpYXQiOjE3NDE2MTQ3MjMsImV4cCI6MTc0MTYxNTYyM30.rN9pgihPh_4w1Yr9vD2-lC8Q6jrsWEoi5OB0wWwLG2Y
+@sessionId = e3564420-2e6a-444e-8666-2543a1f52058
+
+### Send Message (New Conversation)
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+    "message": "Hello, how are you?",
+    "sessionId": null
+}
+
+### Continue Conversation (Using Previous Session)
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+    "message": "chuka",
+    "sessionId": "{{sessionId}}"
+}
+
+### Test Intent Detection
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+    "message": "I need help with booking",
+    "sessionId": null
+}
+
+### Test Error Handling
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+    "message": "",
+    "sessionId": null
+}
+
