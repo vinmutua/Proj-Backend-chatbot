@@ -1,13 +1,10 @@
-import { IAuthRequest, IAuthResponse, IGoogleAuthRequest, IDecodedToken } from '../interfaces/userInterface';
+import { IAuthRequest, IAuthResponse, IDecodedToken } from '../interfaces/userInterface';
 import { hashPassword, comparePasswords } from '../utils/bcrypt';
 import { generateTokens, verifyJwtToken, verifyRefreshToken } from '../utils/jwt';
-import { verifyGoogleToken } from '../utils/oauth';
 import prisma from '../lib/prisma';
-import crypto from 'crypto';
 import { AppError } from '../types/errors';
 import { User } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
-import { authConfig } from '../config/config';
+
 
 export class UserService {
     async signup(userData: IAuthRequest): Promise<IAuthResponse> {
@@ -102,40 +99,6 @@ export class UserService {
         }
     }
 
-    async googleLogin(authData: IGoogleAuthRequest): Promise<IAuthResponse> {
-        const googleUser = await verifyGoogleToken(authData.idToken);
-        
-        if (!googleUser || googleUser.email !== authData.email) {
-            throw new AppError(401, 'Invalid Google token');
-        }
-
-        let user = await prisma.user.findUnique({
-            where: { email: authData.email }
-        });
-
-        if (!user) {
-            user = await prisma.user.create({
-                data: {
-                    email: authData.email,
-                    googleId: authData.googleId,
-                    password: await hashPassword(crypto.randomBytes(32).toString('hex'))
-                }
-            });
-        }
-
-        const tokens = await generateTokens(user.id);
-        
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { refreshToken: tokens.refreshToken }
-        });
-
-        return {
-            user: this.sanitizeUser(user),
-            tokens
-        };
-    }
-
     async logout(userId: string): Promise<void> {
         try {
             const user = await prisma.user.findUnique({
@@ -157,19 +120,41 @@ export class UserService {
         }
     }
 
-    async findUserById(userId: string) {
+    async findUserById(userId: string): Promise<User> {
+        const user = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!user) {
+            throw new AppError(404, 'User not found');
+        }
+
+        return user;
+    }
+
+    async refreshAccessToken(refreshToken: string) {
         try {
+            const decoded = await verifyRefreshToken(refreshToken);
+            const userId = decoded.userId;
+
             const user = await prisma.user.findUnique({
                 where: { id: userId }
             });
 
-            if (!user) {
-                throw new AppError(404, 'User not found');
+            if (!user || user.refreshToken !== refreshToken) {
+                throw new AppError(401, 'Invalid refresh token');
             }
 
-            return user;
+            const tokens = await generateTokens(userId);
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: { refreshToken: tokens.refreshToken }
+            });
+
+            return tokens;
         } catch (error) {
-            throw error;
+            throw new AppError(401, 'Invalid refresh token');
         }
     }
 

@@ -32,33 +32,46 @@ class MessageService {
 
     public async handleMessage(
         message: string,
-        userId: string,
-        sessionId?: string
+        sessionId?: string,
+        userId?: string  // Make userId optional
     ): Promise<IMessageResponse> {
         try {
-            const finalSessionId = sessionId || uuidv4();
-            const dialogflowResponse = await this.getDialogflowResponse(message, finalSessionId);
-            
-            await this.storeConversation(
-                userId,
-                finalSessionId,
-                message,
-                dialogflowResponse.fulfillmentText
-            );
+            // Generate a new session ID if none is provided
+            const conversationId = sessionId || uuidv4();
 
+            // Call Dialogflow
+            const dialogflowResponse = await this.getDialogflowResponse(
+                message,
+                conversationId
+            );
+            
+            // Save conversation to database
+            await this.saveConversation(
+                conversationId,
+                message, 
+                dialogflowResponse.fulfillmentText,
+                userId || null  // Use null when no userId provided
+            );
+            
+            // Return response
             return {
                 success: true,
-                sessionId: finalSessionId,
+                sessionId: conversationId,
                 response: dialogflowResponse.fulfillmentText,
-                timestamp: new Date(),  // Add timestamp
+                timestamp: new Date(),
                 metadata: {
                     intent: dialogflowResponse.intent?.displayName,
                     confidence: dialogflowResponse.intent?.confidence,
                     parameters: dialogflowResponse.parameters
                 }
             };
-        } catch (error: any) {
-            throw new AppError(500, `Dialogflow error: ${error.message}`);
+        } catch (error: unknown) {
+            // Properly type check the error before accessing properties
+            const errorMessage = error instanceof Error 
+                ? error.message 
+                : 'Unknown error';
+            
+            throw new AppError(500, `Dialogflow error: ${errorMessage}`);
         }
     }
 
@@ -102,29 +115,34 @@ class MessageService {
                 } : undefined,
                 parameters: response.queryResult.parameters?.fields || {}
             };
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Dialogflow API error:', error);
-            throw new AppError(500, `Dialogflow API error: ${error.message}`);
+            const errorMessage = error instanceof Error 
+                ? error.message 
+                : 'Unknown error';
+            
+            throw new AppError(500, `Dialogflow API error: ${errorMessage}`);
         }
     }
 
-    private async storeConversation(
-        userId: string,
+    private async saveConversation(
         sessionId: string,
         message: string,
-        response: string
+        response: string,
+        userId: string | null
     ): Promise<void> {
         try {
             await prisma.conversation.create({
                 data: {
-                    userId,
                     sessionId,
                     message,
-                    response
+                    response,
+                    userId  // Will be null for anonymous users
                 }
             });
-        } catch (error) {
-            throw new AppError(500, 'Failed to store conversation');
+        } catch (error: unknown) {
+            console.error('Error saving conversation:', error);
+            // Don't throw
         }
     }
 }

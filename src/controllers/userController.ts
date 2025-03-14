@@ -1,130 +1,95 @@
 import { Request, Response } from 'express';
-import { userService } from '../services/userService';
-import { AppError } from '../types/errors';
-import { IAuthRequest, IGoogleAuthRequest } from '../interfaces/userInterface';
-import { authConfig } from '../config/config';
+import { UserService } from '../services/userService';
+import { IAuthRequest, IAuthResponse } from '../interfaces/userInterface';
+import { AppError } from '../utils/AppError';
 
 export class UserController {
-    // Bind methods in constructor to preserve 'this' context
+    private userService: UserService;
+
     constructor() {
-        this.signup = this.signup.bind(this);
-        this.login = this.login.bind(this);
-        this.refreshToken = this.refreshToken.bind(this);
-        this.logout = this.logout.bind(this);
-        this.googleLogin = this.googleLogin.bind(this);
-        this.getProfile = this.getProfile.bind(this);
-        this.handleError = this.handleError.bind(this);
+        this.userService = new UserService();
     }
 
-    private handleError(error: unknown, res: Response, defaultMessage: string): void {
-        if (error instanceof AppError) {
-            res.status(error.statusCode).json({ message: error.message });
-        } else {
-            console.error('Error:', error);
-            res.status(500).json({ message: defaultMessage });
-        }
-    }
-
-    public async signup(req: Request<{}, {}, IAuthRequest>, res: Response): Promise<void> {
+    public signup = async (req: Request<{}, {}, IAuthRequest>, res: Response): Promise<void> => {
         try {
-            const result = await userService.signup(req.body);
-            res.status(201).json(result);
-        } catch (error) {
-            this.handleError(error, res, 'Error during signup');
+            const userData = await this.userService.signup(req.body);
+            res.status(201).json(userData);
+        } catch (error: any) {
+            res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message
+            });
         }
-    }
+    };
 
-    public async login(req: Request, res: Response): Promise<void> {
+    public login = async (req: Request<{}, {}, IAuthRequest>, res: Response): Promise<void> => {
         try {
-            const { email, password, remember } = req.body;
-            const result = await userService.login(email, password, remember);
-            res.status(200).json(result);
-        } catch (error) {
-            this.handleError(error, res, 'Authentication failed');
+            const { email, password } = req.body; // Extract email and password from req.body
+            const userData = await this.userService.login(email, password); // Pass email and password
+            res.status(200).json(userData);
+        } catch (error: any) {
+            res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message
+            });
         }
-    }
+    };
 
-    public async refreshToken(req: Request, res: Response): Promise<void> {
+    public logout = async (req: Request, res: Response): Promise<void> => {
         try {
-            const refreshToken = req.body.refreshToken || req.cookies.refreshToken;
-            
-            if (!refreshToken) {
-                throw new AppError(401, 'Refresh token is required');
-            }
+            const userId = req.user?.id;
+            if (!userId) throw new AppError(401, 'User not authenticated');
 
-            const result = await userService.refreshToken(refreshToken);
-            
-            // Set cookies if using cookie-based auth
-            if (req.cookies) {
-                res.cookie('accessToken', result.tokens.accessToken, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
-                    maxAge: authConfig.token_refresh_interval
-                });
-            }
+            await this.userService.logout(userId);
+            res.status(200).json({ success: true });
+        } catch (error: any) {
+            res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    };
 
+    public getProfile = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const userId = req.user?.id;
+            if (!userId) throw new AppError(401, 'User not authenticated');
+
+            const user = await this.userService.findUserById(userId);
+            res.status(200).json({ 
+                success: true,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt
+                }
+            });
+        } catch (error: any) {
+            res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    };
+
+    public refreshToken = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const refreshToken = req.body.refreshToken;
+            if (!refreshToken) throw new AppError(400, 'Refresh token is required');
+
+            const tokens = await this.userService.refreshAccessToken(refreshToken);
             res.status(200).json({
                 success: true,
-                ...result
+                ...tokens
             });
-        } catch (error) {
-            this.handleError(error, res, 'Error refreshing token');
-        }
-    }
-
-    public async logout(req: Request, res: Response): Promise<void> {
-        try {
-            // Do not convert to Number - use the string directly.
-            const userId = req.user?.id;
-            if (!userId || typeof userId !== 'string') {
-                throw new AppError(400, 'Invalid user ID');
-            }
-
-            await userService.logout(userId);
-
-            // Clear cookies if you're using them
-            res.clearCookie('accessToken');
-            res.clearCookie('refreshToken');
-
-            res.status(200).json({
-                success: true,
-                message: 'Logged out successfully'
+        } catch (error: any) {
+            res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message
             });
-        } catch (error) {
-            this.handleError(error, res, 'Error during logout');
         }
-    }
-
-    public async googleLogin(req: Request<{}, {}, IGoogleAuthRequest>, res: Response): Promise<void> {
-        try {
-            const result = await userService.googleLogin(req.body);
-            res.status(200).json(result);
-        } catch (error) {
-            this.handleError(error, res, 'Google authentication failed');
-        }
-    }
-
-    public async getProfile(req: Request, res: Response): Promise<void> {
-        try {
-            // Use the string ID from the request
-            const userId = req.user?.id;
-            if (!userId || typeof userId !== 'string') {
-                throw new AppError(400, 'Invalid user ID');
-            }
-
-            const user = await userService.findUserById(userId);
-            if (!user) {
-                throw new AppError(404, 'User not found');
-            }
-
-            // Remove sensitive data
-            const { password, refreshToken, ...safeUser } = user;
-            res.status(200).json(safeUser);
-        } catch (error) {
-            this.handleError(error, res, 'Error fetching user profile');
-        }
-    }
+    };
 }
 
 export const userController = new UserController();

@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:3000/api/messages
 @contentType = application/json
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzZGI4YjE3Zi0wZTFhLTQ4Y2YtYWMwYi0xNTVhZDcxYzUyNTAiLCJpYXQiOjE3NDE2MTQ3MjMsImV4cCI6MTc0MTYxNTYyM30.rN9pgihPh_4w1Yr9vD2-lC8Q6jrsWEoi5OB0wWwLG2Y
-@sessionId = e3564420-2e6a-444e-8666-2543a1f52058
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzZGI4YjE3Zi0wZTFhLTQ4Y2YtYWMwYi0xNTVhZDcxYzUyNTAiLCJpYXQiOjE3NDE5MTIxMDYsImV4cCI6MTc0MTkxMzAwNn0.gd5KwJ_yNGepu7e8f6OFQ1vqnxuOD6vMsKu1hIeK2o4
+@sessionId = 4912ab84-e675-4dfd-b36a-8670bd5fb6c6
 
 ### Send Message (New Conversation)
 POST {{baseUrl}}
@@ -19,7 +19,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{authToken}}
 
 {
-    "message": "chuka",
+    "message": "hey testing authentication requiremnts",
     "sessionId": "{{sessionId}}"
 }
 

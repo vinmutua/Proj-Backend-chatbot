@@ -1,10 +1,9 @@
 import { Router } from 'express';
 import { messageController } from '../controllers/messageController';
-import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-// Protected route - requires authentication
-router.post('/', authMiddleware, messageController.processMessage);
+// Public route - no authentication required
+router.post('/', messageController.handleMessage);
 
 export default router;

@@ -12,22 +12,20 @@ model User {
   email        String        @unique
   password     String
   refreshToken String?
-  googleId     String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  conversations Conversation[] // Add this relation
+  conversations Conversation[]
 
   @@map("users")
 }
 
 model Conversation {
   id        String   @id @default(uuid())
-  userId    String
   sessionId String
-  message   String   // User's message
-  response  String   // Dialogflow's response
+  message   String
+  response  String
+  userId    String?  // Make optional with ?
+  user      User?    @relation(fields: [userId], references: [id]) // Make optional with ?
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@map("conversations")
+  updatedAt DateTime @updatedAt
 }

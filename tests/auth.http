@@ -6,12 +6,9 @@ POST {{baseUrl}}/signup
 Content-Type: {{contentType}}
 
 {
-    "email": "testmess@example.com",
-    "password": "TestPass123@",
-    "confirmPassword": "TestPass123"
+    "email": "testmess1@example.com",
+    "password": "TestPass123@"
 }
-
-
 
 ### Login Operation
 POST {{baseUrl}}/login
@@ -21,6 +18,8 @@ Content-Type: {{contentType}}
     "email": "testmess@example.com",
     "password": "TestPass123@"
 }
+
+
 
 
 

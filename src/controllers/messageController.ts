@@ -2,22 +2,17 @@ import { Request, Response } from 'express';
 import { messageService } from '../services/messageService';
 import { AppError } from '../utils/AppError';
 
-class MessageController {
-    public async processMessage(req: Request, res: Response): Promise<void> {
+export const messageController = {
+    handleMessage: async (req: Request, res: Response): Promise<void> => {
         try {
-            const userId = req.user?.id;
-            if (!userId) {
-                throw new AppError(401, 'User not authenticated');
-            }
-
             const { message, sessionId } = req.body;
             if (!message || typeof message !== 'string') {
                 throw new AppError(400, 'Message is required');
             }
 
+            // Use the correct method from your messageService
             const response = await messageService.handleMessage(
                 message,
-                userId,
                 sessionId
             );
 
@@ -29,6 +24,4 @@ class MessageController {
             });
         }
     }
-}
-
-export const messageController = new MessageController();
+};

@@ -32,13 +32,9 @@ export const authConfig: AuthConfig = {
     refresh_secret: process.env.REFRESH_SECRET,
     access_token_expiry: process.env.ACCESS_TOKEN_EXPIRY || '15m',
     refresh_token_expiry: process.env.REFRESH_TOKEN_EXPIRY || '7d',
-    token_refresh_interval: 840000, // 14 minutes
-    session_timeout: 3600000       // 1 hour
+    token_refresh_interval: 840000,
+    session_timeout: 3600000
 };
 
-export const googleConfig = {
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    callback_url: process.env.GOOGLE_CALLBACK_URL
-};
+
 

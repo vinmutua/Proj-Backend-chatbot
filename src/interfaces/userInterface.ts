@@ -4,7 +4,6 @@ import { JwtPayload } from 'jsonwebtoken';
 // Base User Type
 export type IUser = User
 
-// Authentication Interfaces
 export interface ILoginCredentials {
     email: string;
     password: string;
@@ -23,7 +22,6 @@ export interface ILoginResponse {
     };
 }
 
-// Token Related
 export interface IDecodedToken extends JwtPayload {
     userId: string;
     iat: number;
@@ -32,48 +30,15 @@ export interface IDecodedToken extends JwtPayload {
 
 export type TokenExpiry = string | number;
 
-// Google Authentication Interfaces
-export interface IGoogleAuthCredentials {
-    idToken: string;
-}
-
-export interface IGoogleUser {
-    email: string;
-    name: string;
-    sub: string;
-}
-
-// Request Parameter Interfaces
 export interface IUserParams {
     id: string;
 }
 
-// Auth Request Interfaces
-export interface ISignupRequest {
+export interface IAuthRequest {
     email: string;
     password: string;
 }
 
-export interface ILoginRequest {
-    email: string;
-    password: string;
-    remember?: boolean;
-}
-
-export interface IGoogleAuthRequest {
-    googleId: string;
-    email: string;
-    idToken: string;
-}
-
-// Password Reset Interfaces
-export interface IPasswordReset {
-    email: string;
-    token: string;
-    newPassword: string;
-}
-
-// Response Interfaces
 export interface IAuthResponse {
     user: Omit<User, 'password' | 'refreshToken'>;
     tokens: {
@@ -82,14 +47,7 @@ export interface IAuthResponse {
     };
 }
 
-// Error Interface
-export interface IAppError {
-    statusCode: number;
-    message: string;
-}
-
-// Essential Auth Request Interfaces
-export interface IAuthRequest {
-    email: string;
-    password: string;
+interface IUserService {
+    signup(signupData: IAuthRequest): Promise<any>;
+    login(loginData: IAuthRequest): Promise<any>;
 }
